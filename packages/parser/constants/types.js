@@ -1,0 +1,8 @@
+module.exports = TYPES = {
+    KEYWORD: "KEYWORD",
+    PUNCTUATOR: "PUNCTUATOR",
+    INTEGER: "INTEGER",
+    STRING: "STRING",
+    VARIABLE: "VARIABLE",
+    OPERATOR: "OPERATOR",
+};
