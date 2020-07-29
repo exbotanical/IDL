@@ -8,5 +8,6 @@ module.exports = TYPES = {
     BOOLEAN: "BOOLEAN",
     CALL: "CALL",
     BINARY: "BINARY",
-    ASSIGNMENT: "ASSIGNMENT"
+    ASSIGNMENT: "ASSIGNMENT",
+    SEQUENCE: "SEQUENCE"
 };

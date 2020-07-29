@@ -1,11 +1,10 @@
-const { KEYWORD } = require("./types");
-
 module.exports = KEYWORDS = {
     DECLARATION: "let",
     CONDITIONAL: "if",
     PROC: "do",
     ALTERNATIVE: "else",
-    FUNCTION: "resolve",
+    FUNCTION: "resolver",
     TRUE: "true",
-    FALSE: "false"
+    FALSE: "false",
+    ALL: " if do else resolver true false "
 };

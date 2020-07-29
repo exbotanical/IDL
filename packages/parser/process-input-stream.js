@@ -16,7 +16,7 @@ const RenderInputStream = input => {
         }
         // no newline, proceed to next char
         else {
-            column++;
+            _column++;
         }
         return char;
     };
@@ -30,7 +30,7 @@ const RenderInputStream = input => {
 
     // forcibly terminate, throwing an exception w/reference to source thereof
     const term = (reason, cause) => {
-        throw new Error(`${reason} [${_line} ] ${_column} ${cause ? `(${cause})` : "" }`);
+        throw new Error(`${reason} ${_line}:${_column} ${cause ? `(${cause})` : "" }`);
     };
 
     return {

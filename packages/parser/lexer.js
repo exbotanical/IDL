@@ -1,15 +1,12 @@
-const TOKENS = require("./constants/tokens.js");
-const TYPES = require("./constants/types.js");
-const ERRORS = require("./constants/errors.js");
+const { ERRORS, TOKENS, TYPES, KEYWORDS } = require("../constants");
 
 const RenderTokenStream = input => {
-    const _current = null,
-        _keywords = " if do else resolve true false ";
+    let _current = null;
     
     /* Token Identifiers */
 
     // via `indexOf` - ever-so-slightly faster than evaluating an array
-    const isKeyword = char => _keywords.indexOf(` ${char} `) >= 0;
+    const isKeyword = char => KEYWORDS.ALL.indexOf(` ${char} `) >= 0;
     const isDigit = char => TOKENS.DIGIT.test(char);
     const isIdentifierStart = char => TOKENS.IDENTIFIER_START.test(char);
     const isIdentifier =  char => isIdentifierStart(char) || TOKENS.IDENTIFIER.indexOf(char) >= 0;
@@ -90,6 +87,7 @@ const RenderTokenStream = input => {
             return null;
         }
         const char = input.peek();
+        // if comment, parse until newline, then retry
         if (char === TOKENS.COMMENT_START) {
             parseComment();
             return parseNext();
