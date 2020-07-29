@@ -8,7 +8,7 @@ const RenderInputStream = input => {
     // return next value, discard from stream
     // advance to next extant (non-newline) character 
     const next = () => {
-        let char = input.charAt(_position++);
+        const char = input.charAt(_position++);
         // newline encountered, increment line count and reset column counter
         if (char == "\n") {
             _line++;
@@ -23,14 +23,10 @@ const RenderInputStream = input => {
 
     // return next value, does not disrupt stream
     // artificially advance to next character
-    const peek = () => {
-        return input.charAt(_position);
-    };
+    const peek = () => input.charAt(_position);
 
     // returns true if and only if stream end
-    const eof = () => {
-        return peek() === "";
-    };
+    const eof = () => peek() === "";
 
     // forcibly terminate, throwing an exception w/reference to source thereof
     const term = (reason) => {

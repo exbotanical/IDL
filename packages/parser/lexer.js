@@ -3,7 +3,7 @@ const TYPES = require("./constants/types.js");
 const ERRORS = require("./constants/errors.js");
 
 const RenderTokenStream = input => {
-    let _current = null,
+    const _current = null,
         _keywords = " if then else lambda true false ";
     
     /* Token Identifiers */
@@ -44,7 +44,7 @@ const RenderTokenStream = input => {
     };
 
     const parseIdentifier = () => {
-        let identifier = parseWhile(isIdentifier);
+        const identifier = parseWhile(isIdentifier);
         return {
             type: isKeyword(identifier) ? TYPES.KEYWORD : TYPES.VARIABLE,
             value: identifier
@@ -113,7 +113,7 @@ const RenderTokenStream = input => {
             return {
                 type: TYPES.OPERATOR,
                 value: parseWhile(isOperator)
-            }
+            };
         };
         input.term(`${ERRORS.UNKNOWN}: ${char}`);
     };
@@ -122,7 +122,7 @@ const RenderTokenStream = input => {
     const peek = () => _current || (_current = parseNext());
     
     const next = () => {
-        let token = _current;
+        const token = _current;
         _current = null;
         return token || parseNext();
     };
