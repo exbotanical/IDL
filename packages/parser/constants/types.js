@@ -5,4 +5,8 @@ module.exports = TYPES = {
     STRING: "STRING",
     VARIABLE: "VARIABLE",
     OPERATOR: "OPERATOR",
+    BOOLEAN: "BOOLEAN",
+    CALL: "CALL",
+    BINARY: "BINARY",
+    ASSIGNMENT: "ASSIGNMENT"
 };

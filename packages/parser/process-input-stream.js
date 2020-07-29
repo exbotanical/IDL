@@ -29,8 +29,8 @@ const RenderInputStream = input => {
     const eof = () => peek() === "";
 
     // forcibly terminate, throwing an exception w/reference to source thereof
-    const term = (reason) => {
-        throw new Error(`${reason} [${_line} ] ${_column}`);
+    const term = (reason, cause) => {
+        throw new Error(`${reason} [${_line} ] ${_column} ${cause ? `(${cause})` : "" }`);
     };
 
     return {

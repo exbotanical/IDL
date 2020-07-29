@@ -4,7 +4,7 @@ const ERRORS = require("./constants/errors.js");
 
 const RenderTokenStream = input => {
     const _current = null,
-        _keywords = " if then else lambda true false ";
+        _keywords = " if do else resolve true false ";
     
     /* Token Identifiers */
 

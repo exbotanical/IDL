@@ -8,5 +8,12 @@ module.exports = TOKENS = {
     COMMENT_START: "#",
     NEWLINE: "\n",
     QUOTE: '"',
-    ESCAPE: "\\"
+    ESCAPE: "\\",
+    ASSIGNMENT: "=",
+    PARENS_OPEN: "(",
+    PARENS_CLOSE: ")",
+    BLOCK_OPEN: "{",
+    BLOCK_CLOSE: "}",
+    END_EXPR: ";",
+    DELIMITER: ","
 };
