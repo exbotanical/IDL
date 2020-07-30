@@ -72,7 +72,6 @@ const parse = input => {
 
     const parseVariable = () => {
         const token = input.next();
-        console.log({token});
         if (token.type !== TYPES.VARIABLE) {
             input.term(ERRORS.NO_VARNAME);
         }
@@ -101,6 +100,7 @@ const parse = input => {
 
     const parseResolver = () => ({
             type: KEYWORDS.FUNCTION,
+            name: input.peek().type === TYPES.VARIABLE ? input.next().value : null,
             vars: delimited(TOKENS.EXPR_OPEN, TOKENS.EXPR_CLOSE, TOKENS.DELIMITER, parseVariable),
             body: parseExpression()
         });
@@ -117,6 +117,7 @@ const parse = input => {
         return isPunctuator(TOKENS.EXPR_OPEN) ? parseCall(inbound) : inbound;
     };
 
+    // root dispatcher
     function parseAtom() {
         // checks for expression open
         return isNextCall(() => {
@@ -131,6 +132,9 @@ const parse = input => {
             }
             if (isPunctuator(TOKENS.BLOCK_OPEN)) {
                 return parseSequence();
+            }
+            if (isKeyword("let")) {
+                return parseLet();
             }
             if (isKeyword(KEYWORDS.CONDITIONAL)) {
                 return parseIfStatement();
@@ -173,8 +177,43 @@ const parse = input => {
         }
         return { type: TYPES.CALL, seq };
     };
-    
+
     const parseExpression = () => isNextCall(() => isNextBinary(parseAtom(), 0));
+
+
+    function parseLet() {
+        passKeyword(KEYWORDS.DECLARATION);
+        if (input.peek().type == TYPES.VARIABLE) {
+            const name = input.next().value;
+            const defs = delimited(TOKENS.EXPR_OPEN, TOKENS.EXPR_CLOSE, TOKENS.DELIMITER, parseNamedLet);
+            
+            return {
+                type: TYPES.CALL,
+                func: {
+                    type: KEYWORDS.FUNCTION,
+                    name,
+                    vars: defs.map(def => def.name),
+                    body: parseExpression(),
+                },
+                args: defs.map(def => def.def || { type: TYPES.BOOLEAN, value: false } )
+            };
+        }
+        return {
+            type: KEYWORDS.DECLARATION,
+            vars: delimited(TOKENS.EXPR_OPEN, TOKENS.EXPR_CLOSE, TOKENS.DELIMITER, parseNamedLet),
+            body: parseExpression(),
+        };
+    };
+
+    function parseNamedLet() {
+        var name = parseVariable(), 
+            def;
+        if (isOperator(TOKENS.ASSIGNMENT)) {
+            input.next();
+            def = parseExpression();
+        }
+        return { name, def };
+    };
 
     return parseRoot();
 

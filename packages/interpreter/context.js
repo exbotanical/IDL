@@ -80,7 +80,7 @@ function evaluate(expr, env) {
                 expr.args.map(arg => evaluate(arg, env)
         ));
 
-        case KEYWORDS.VAR:
+        case KEYWORDS.DECLARATION:
             expr.vars.forEach((v) => {
                 const scope = env.extend();
                 scope.define(v.name, v.def ? evaluate(v.def, env) : false);
@@ -151,6 +151,7 @@ function constructResolver(env, exp) {
         const variables = exp.vars,
             context = env.extend();
         for (let i = 0; i < variables.length; ++i) {
+            console.log("i", context, variables, i);
             context.define(variables[i], i < args.length ? args[i] : false);
         }
         return evaluate(exp.body, context);

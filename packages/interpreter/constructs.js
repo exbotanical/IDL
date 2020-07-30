@@ -41,7 +41,7 @@ if (typeof process !== "undefined") {
 };
 
 // test
-const code = "sum = resolver(x, y) x + y; print(sum(2, 3));";
+const code = "let (x = 2, y = 3, z = x + y) print(x + y + z);";
 
 const ast = parse(RenderTokenStream(RenderInputStream(code)));
 
