@@ -5,7 +5,7 @@ const parse = input => {
 
     const procIs = (type, inbound) => {
         const token = input.peek();
-        console.log(token)
+        console.log(token);
         return token && token.type === type && (!inbound || token.value === inbound) && token;
     };
     
@@ -72,7 +72,7 @@ const parse = input => {
 
     const parseVariable = () => {
         const token = input.next();
-        console.log({token})
+        console.log({token});
         if (token.type !== TYPES.VARIABLE) {
             input.term(ERRORS.NO_VARNAME);
         }
@@ -87,7 +87,7 @@ const parse = input => {
         }
         const then = parseExpression();
 
-        let conditionalExpression = {
+        const conditionalExpression = {
             type: KEYWORDS.CONDITIONAL,
             condition,
             then,
@@ -99,7 +99,7 @@ const parse = input => {
         return conditionalExpression;
     };
 
-    const parseResolution = () => ({
+    const parseResolver = () => ({
             type: KEYWORDS.FUNCTION,
             vars: delimited(TOKENS.EXPR_OPEN, TOKENS.EXPR_CLOSE, TOKENS.DELIMITER, parseVariable),
             body: parseExpression()
@@ -140,7 +140,7 @@ const parse = input => {
             }
             if (isKeyword(KEYWORDS.FUNCTION)) {
                 input.next();
-                return parseResolution();
+                return parseResolver();
             }
             const token = input.next();
             if (token.type === TYPES.VARIABLE || token.type === TYPES.INTEGER || token.type === TYPES.STRING) {
@@ -174,11 +174,7 @@ const parse = input => {
         return { type: TYPES.CALL, seq };
     };
     
-    const parseExpression = () => {
-        return isNextCall(() => {
-            return isNextBinary(parseAtom(), 0);
-        });
-    };
+    const parseExpression = () => isNextCall(() => isNextBinary(parseAtom(), 0));
 
     return parseRoot();
 

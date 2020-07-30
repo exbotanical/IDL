@@ -9,5 +9,5 @@ module.exports = TYPES = {
     CALL: "CALL",
     BINARY: "BINARY",
     ASSIGNMENT: "ASSIGNMENT",
-    SEQUENCE: "SEQUENCE"
+    SEQUENCE: "SEQUENCE",
 };

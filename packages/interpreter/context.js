@@ -70,7 +70,7 @@ function evaluate(expr, env) {
         case TYPES.SEQUENCE:
             let ephemeralVal = false;
             expr.seq.forEach(expr => { 
-                ephemeralVal = evaluate(expr, env) 
+                ephemeralVal = evaluate(expr, env);
             });
             return ephemeralVal;
 
@@ -80,6 +80,14 @@ function evaluate(expr, env) {
                 null, 
                 expr.args.map(arg => evaluate(arg, env)
         ));
+
+        case KEYWORDS.VAR:
+            expr.vars.forEach((v) => {
+                const scope = env.extend();
+                scope.define(v.name, v.def ? evaluate(v.def, env) : false);
+                env = scope;
+            });
+            return evaluate(expr.body, env);
 
         default:
             throw new Error(`${ERRORS.EVAL} ${expr.type}`);
@@ -134,11 +142,17 @@ function applyOperator(op, a, b) {
 };
 
 function constructResolver(env, exp) {
-    function resolver() {
-        let variables = exp.vars;
-        let context = env.extend();
+    // if func name is extant, extend the scope, pointing said name at closure created herein
+    // this is how we handle `{{KEYWORDS.VAR}}`
+    if (exp.name) {                    
+        env = env.extend();            
+        env.def(exp.name, resolver); 
+    }           
+    function resolver(...args) {
+        const variables = exp.vars,
+            context = env.extend();
         for (let i = 0; i < variables.length; ++i) {
-            context.define(variables[i], i < arguments.length ? arguments[i] : false);
+            context.define(variables[i], i < args.length ? args[i] : false);
         }
         return evaluate(exp.body, context);
     }

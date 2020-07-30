@@ -6,5 +6,5 @@ module.exports = KEYWORDS = {
     FUNCTION: "resolver",
     TRUE: "true",
     FALSE: "false",
-    ALL: " if do else resolver true false "
+    ALL: " let if do else resolver true false ",
 };
