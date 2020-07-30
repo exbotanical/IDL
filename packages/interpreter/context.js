@@ -1,5 +1,37 @@
 const { ERRORS, KEYWORDS, PRECEDENCE, TYPES, TOKENS } = require("../constants");
 
+
+let STACK_LEN;
+
+function STACK_GUARD(f, args) {
+    if (--STACK_LEN < 0) {
+        throw new Continuation(f, args);
+    }
+};
+
+function Continuation(f, args) {
+    this.f = f;
+    this.args = args;
+};
+
+function Execute(f, args) {
+    while (true) {
+        try {
+            STACK_LEN = 200;
+            return f.apply(null, args);
+        }
+        catch(err) {
+            if (err instanceof Continuation) {
+                f = ex.f;
+                args = ex.args;
+            }
+            else {
+                throw err;
+            }
+        }
+    }
+};
+
 function Context(parent) {
     this.vars = Object.create(parent ? parent.vars : null);
     this.parent = parent;
@@ -36,57 +68,113 @@ Context.prototype = {
     }
 };
 
-function evaluate(expr, env) {
+function evaluate(expr, env, callback) {
+    STACK_GUARD(evaluate, arguments);
     switch (expr.type) {
         case TYPES.INTEGER: case TYPES.STRING: case TYPES.BOOLEAN:
-            return expr.value;
+            callback(expr.value);
+            return;
         case TYPES.VARIABLE:
-            return env.get(expr.value);
+            callback(env.get(expr.value));
+            return;
 
         case TYPES.ASSIGNMENT:
             if (expr.left.type !== TYPES.VARIABLE) {
                 throw new Error(`${ERRORS.EXPECT_VAR} ${JSON.stringify(expr.left)}`);
             }
-            return env.set(expr.left.value, evaluate(expr.right, env));
+            evaluate(expr.right, env, function CC(right) {
+                STACK_GUARD(CC, arguments);
+                callback(env.set(expr.left.value, right));
+            });
+            return;
 
         case TYPES.BINARY:
-            return applyOperator(
-                expr.operator,
-                evaluate(expr.left, env),
-                evaluate(expr.right, env)
-            );
+            evaluate(expr.left, env, function CC(left) {
+                STACK_GUARD(CC, arguments);
+                evaluate(expr.right, env, function CC(right) {
+                    STACK_GUARD(CC, arguments);
+                    callback(applyOperator(expr.operator, left, right));
+                });
+            });
+            return;
 
         case KEYWORDS.FUNCTION:
-            return constructResolver(env, expr);
+            callback(constructResolver(env, expr));
+            return;
 
         case KEYWORDS.CONDITIONAL:
-            const condition = evaluate(expr.condition, env);
-            if (condition !== false) {
-                return evaluate(expr.then, env);
-            }
-            return expr.else ? evaluate(expr.else, env) : false;
-
-        case TYPES.SEQUENCE:
-            let ephemeralVal = false;
-            expr.seq.forEach(expr => { 
-                ephemeralVal = evaluate(expr, env);
+            evaluate(expr.condition, env, function CC(cond) {
+                STACK_GUARD(CC, arguments);
+                if (cond !== false) {
+                    evaluate(expr.do, env, callback);
+                }
+                else if (expr.else) {
+                    evaluate(expr.else, env, callback);
+                }
+                else {
+                    callback(false);
+                }
             });
-            return ephemeralVal;
+            return;
+            
+        case TYPES.SEQUENCE:
+            (function loop(last, i) {
+                STACK_GUARD(loop, arguments);
+                if (i < expr.seq.length) {
+                    evaluate(expr.seq[i], env, function CC(val) {
+                        STACK_GUARD(CC, arguments);
+                        loop(val, i + 1);
+                    });
+                } 
+                else {
+                    callback(last);
+                }
+            })(false, 0);
+            return;
 
         case TYPES.CALL:
-            const caller = evaluate(expr.func, env);
-            return caller.apply(
-                null, 
-                expr.args.map(arg => evaluate(arg, env)
-        ));
+            evaluate(expr.func, env, function CC(fn) {
+                STACK_GUARD(CC, arguments);
+                (function loop(args, i) {
+                    STACK_GUARD(loop, arguments);
+                    if (i < expr.args.length) {
+                        evaluate(expr.args[i], env, function CC(arg) {
+                            STACK_GUARD(CC, arguments);
+                            args[i + 1] = arg;
+                            loop(args, i + 1);
+                        }); 
+                    } 
+                    else {
+                        fn.apply(null, args);
+                    }
+                })([ callback ], 0);
+            });
+            return;
 
         case KEYWORDS.DECLARATION:
-            expr.vars.forEach((v) => {
-                const scope = env.extend();
-                scope.define(v.name, v.def ? evaluate(v.def, env) : false);
-                env = scope;
-            });
-            return evaluate(expr.body, env);
+            (function loop(env, i) {
+                STACK_GUARD(loop, arguments);
+                if (i < expr.vars.length) {
+                    const v = expr.vars[i];
+                    if (v.def) {
+                        evaluate(v.def, env, function CC(value) {
+                            STACK_GUARD(CC, arguments);
+                            const scope = env.extend();
+                            scope.define(v.name, value);
+                            loop(scope, i + 1);
+                        });
+                    }
+                    else {
+                        const scope = env.extend();
+                        scope.define(v.name, false);
+                        loop(scope, i + 1);
+                    }
+                } 
+                else {
+                    evaluate(expr.body, env, callback);
+                }
+            })(env, 0);
+            return;
 
         default:
             throw new Error(`${ERRORS.EVAL} ${expr.type}`);
@@ -140,26 +228,32 @@ function applyOperator(op, a, b) {
     throw new Error(`${ERRORS.UNKNOWN_OP} ${op}`);
 };
 
-function constructResolver(env, exp) {
+function constructResolver(env, expr) {
     // if func name is extant, extend the scope, pointing said name at closure created herein
     // this is how we handle `{{KEYWORDS.VAR}}`
-    if (exp.name) {                    
+    if (expr.name) {                    
         env = env.extend();            
-        env.def(exp.name, resolver); 
+        env.def(expr.name, resolver); 
     }           
-    function resolver(...args) {
-        const variables = exp.vars,
+    function resolver(callback) {
+        STACK_GUARD(resolver, arguments);
+        const variables = expr.vars,
             context = env.extend();
         for (let i = 0; i < variables.length; ++i) {
-            console.log("i", context, variables, i);
-            context.define(variables[i], i < args.length ? args[i] : false);
+            context.define(
+                variables[i], 
+                i + 1 < arguments.length 
+                ? arguments[i + 1]
+                : false
+            );
         }
-        return evaluate(exp.body, context);
+        evaluate(expr.body, context, callback);
     }
     return resolver;
 };
 
 module.exports = {
     Context,
-    evaluate
+    evaluate,
+    Execute
 };

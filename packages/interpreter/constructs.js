@@ -1,4 +1,4 @@
-const { Context, evaluate } = require("./context.js");
+const { Context, evaluate, Execute } = require("./context.js");
 const { parse, RenderInputStream, RenderTokenStream } = require("../parser");
 
 const exeCtx = new Context();
@@ -43,8 +43,8 @@ if (typeof process !== "undefined") {
 // test
 const code = "let (x = 2, y = 3, z = x + y) print(x + y + z);";
 
-const ast = parse(RenderTokenStream(RenderInputStream(code)));
+const AST = parse(RenderTokenStream(RenderInputStream(code)));
 
-exeCtx.define("print", (txt) => console.log(txt));
+exeCtx.define("print", (callback, txt) => callback(txt));
 
-evaluate(ast, exeCtx); 
+Execute(evaluate, [ AST, exeCtx, (result) => console.log("Result ---> ", result)]);
