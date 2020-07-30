@@ -5,7 +5,6 @@ function Context(parent) {
     this.parent = parent;
 };
 
-
 Context.prototype = {
     extend: function() {
         return new Context(this);

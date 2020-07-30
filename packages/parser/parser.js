@@ -5,7 +5,7 @@ const parse = input => {
 
     const procIs = (type, inbound) => {
         const token = input.peek();
-        console.log(token);
+        console.log({token});
         return token && token.type === type && (!inbound || token.value === inbound) && token;
     };
     

@@ -1,7 +1,5 @@
-const parse = require("../parser/parser.js");
-const RenderTokenStream = require("../parser/lexer.js");
-const RenderInputStream = require("../parser/process-input-stream.js");
 const { Context, evaluate } = require("./context.js");
+const { parse, RenderInputStream, RenderTokenStream } = require("../parser");
 
 const exeCtx = new Context();
 
