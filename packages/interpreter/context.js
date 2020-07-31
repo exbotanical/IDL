@@ -22,8 +22,8 @@ function Execute(fn, args) {
         }
         catch(err) {
             if (err instanceof Continuation) {
-                fn = ex.func;
-                args = ex.args;
+                fn = err.func;
+                args = err.args;
             }
             else {
                 throw err;
@@ -71,11 +71,13 @@ Context.prototype = {
 function evaluate(expr, env, callback) {
     STACK_GUARD(evaluate, arguments);
     switch (expr.type) {
+
         case TYPES.INTEGER: case TYPES.STRING: case TYPES.BOOLEAN:
             callback(expr.value);
             // returns are imperative but presumably will never be reached given
             // ea. case recurses across AST nodes
             return;
+
         case TYPES.VARIABLE:
             callback(env.get(expr.value));
             return;
@@ -98,10 +100,6 @@ function evaluate(expr, env, callback) {
                     callback(applyOperator(expr.operator, left, right));
                 });
             });
-            return;
-
-        case KEYWORDS.FUNCTION:
-            callback(constructResolver(env, expr));
             return;
 
         case KEYWORDS.CONDITIONAL:
@@ -178,6 +176,10 @@ function evaluate(expr, env, callback) {
             })(env, 0);
             return;
 
+        case KEYWORDS.FUNCTION:
+            callback(constructResolver(env, expr));
+            return;
+
         default:
             throw new Error(`${ERRORS.EVAL} ${expr.type}`);
     }
@@ -233,7 +235,7 @@ function applyOperator(op, a, b) {
 function constructResolver(env, expr) {
     // if func name is extant, extend the scope, pointing said name at closure created herein
     // this is how we handle `{{KEYWORDS.VAR}}`
-    if (expr.name) {                    
+    if (expr.name) {           
         env = env.extend();            
         env.def(expr.name, resolver); 
     }           

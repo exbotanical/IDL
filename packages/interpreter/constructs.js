@@ -41,7 +41,7 @@ if (typeof process !== "undefined") {
 };
 
 // test
-const code = "let (x = 2, y = 3, z = x + y) print(x + y + z);";
+const code = `let (x = 7, y = 9, z = x + y) print(x + y + z);`;
 
 const ABSTRACT_SYNTAX_TREE = parse(RenderTokenStream(RenderInputStream(code)));
 

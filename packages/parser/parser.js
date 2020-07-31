@@ -5,7 +5,7 @@ const parse = input => {
 
     const procIs = (type, inbound) => {
         const token = input.peek();
-        console.log({token}, type);
+        console.log({token}, {type}, {inbound});
         return token && token.type === type && (!inbound || token.value === inbound) && token;
     };
     
@@ -89,7 +89,7 @@ const parse = input => {
         const conditionalExpression = {
             type: KEYWORDS.CONDITIONAL,
             condition,
-            then,
+            do: then,
         };
         if (isKeyword(KEYWORDS.ALTERNATIVE)) {
             input.next();
