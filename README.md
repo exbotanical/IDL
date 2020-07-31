@@ -23,4 +23,4 @@ Docs coming soon...
 
 
 ## Accreditations
-The design of this interpreter was heavily based on an implementation by Mihai Bazon. The parser was likewise heavily based on patterns and designs by Marijn Haverbeke. 
+The design of this interpreter is heavily based on an implementation by Mihai Bazon. The parser is likewise heavily based on patterns and designs by Marijn Haverbeke. 
