@@ -1,9 +1,9 @@
 const { Context, evaluate, Execute } = require("./context.js");
 const { parse, RenderInputStream, RenderTokenStream } = require("../parser");
 
-const exeCtx = new Context();
+const ctx = new Context();
 
-exeCtx.define("time", (fn) => {
+ctx.define("time", (fn) => {
     try {
         console.time("time");
         return fn();
@@ -17,9 +17,9 @@ if (typeof process !== "undefined") {
     (() => {
         const util = require("util");
 
-        exeCtx.define("println", (val) => util.puts(val));
+        ctx.define("println", (val) => util.puts(val));
 
-        exeCtx.define("print", (val) => util.print(val));
+        ctx.define("print", (val) => util.print(val));
 
         let code = "";
         
@@ -34,7 +34,7 @@ if (typeof process !== "undefined") {
 
         process.stdin.on("end", () => {
             const AST = parse(RenderTokenStream(RenderInputStream(code)));
-            evaluate(AST, exeCtx);
+            evaluate(AST, ctx);
         });
 
     })();
@@ -43,8 +43,8 @@ if (typeof process !== "undefined") {
 // test
 const code = "let (x = 2, y = 3, z = x + y) print(x + y + z);";
 
-const AST = parse(RenderTokenStream(RenderInputStream(code)));
+const ABSTRACT_SYNTAX_TREE = parse(RenderTokenStream(RenderInputStream(code)));
 
-exeCtx.define("print", (callback, txt) => callback(txt));
+ctx.define("print", (callback, txt) => callback(txt));
 
-Execute(evaluate, [ AST, exeCtx, (result) => console.log("Result ---> ", result)]);
+Execute(evaluate, [ ABSTRACT_SYNTAX_TREE, ctx, (result) => console.log("Result ---> ", result)]);

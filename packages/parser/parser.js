@@ -5,7 +5,7 @@ const parse = input => {
 
     const procIs = (type, inbound) => {
         const token = input.peek();
-        console.log({token});
+        console.log({token}, type);
         return token && token.type === type && (!inbound || token.value === inbound) && token;
     };
     
@@ -133,7 +133,7 @@ const parse = input => {
             if (isPunctuator(TOKENS.BLOCK_OPEN)) {
                 return parseSequence();
             }
-            if (isKeyword("let")) {
+            if (isKeyword(KEYWORDS.DECLARATION)) {
                 return parseLet();
             }
             if (isKeyword(KEYWORDS.CONDITIONAL)) {

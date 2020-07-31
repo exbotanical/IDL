@@ -3,26 +3,26 @@ const { ERRORS, KEYWORDS, PRECEDENCE, TYPES, TOKENS } = require("../constants");
 
 let STACK_LEN;
 
-function STACK_GUARD(f, args) {
+function STACK_GUARD(fn, args) {
     if (--STACK_LEN < 0) {
-        throw new Continuation(f, args);
+        throw new Continuation(fn, args);
     }
 };
 
-function Continuation(f, args) {
-    this.f = f;
+function Continuation(fn, args) {
+    this.func = fn;
     this.args = args;
 };
 
-function Execute(f, args) {
+function Execute(fn, args) {
     while (true) {
         try {
             STACK_LEN = 200;
-            return f.apply(null, args);
+            return fn.apply(null, args);
         }
         catch(err) {
             if (err instanceof Continuation) {
-                f = ex.f;
+                fn = ex.func;
                 args = ex.args;
             }
             else {
@@ -73,6 +73,8 @@ function evaluate(expr, env, callback) {
     switch (expr.type) {
         case TYPES.INTEGER: case TYPES.STRING: case TYPES.BOOLEAN:
             callback(expr.value);
+            // returns are imperative but presumably will never be reached given
+            // ea. case recurses across AST nodes
             return;
         case TYPES.VARIABLE:
             callback(env.get(expr.value));
