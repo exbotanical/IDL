@@ -7,4 +7,5 @@ module.exports = KEYWORDS = {
     TRUE: "true",
     FALSE: "false",
     ALL: " let if do else resolver true false ",
+    SYMBOL: "_ε"
 };

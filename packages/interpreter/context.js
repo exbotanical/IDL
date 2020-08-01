@@ -235,9 +235,9 @@ function applyOperator(op, a, b) {
 function constructResolver(env, expr) {
     // if func name is extant, extend the scope, pointing said name at closure created herein
     // this is how we handle `{{KEYWORDS.VAR}}`
-    if (expr.name) {           
+    if (expr.name) {    
         env = env.extend();            
-        env.def(expr.name, resolver); 
+        env.define(expr.name, resolver); 
     }           
     function resolver(callback) {
         STACK_GUARD(resolver, arguments);

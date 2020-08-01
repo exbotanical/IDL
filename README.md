@@ -4,13 +4,31 @@
 
  - [Introduction](#intro) 
     * [Packages](#packages)
+    * [Features](#features)
  - [Documentation](#docs)
     * [Demos](#demo)
-    * [Features](#features)
 
 ## <a name="intro"></a> Introduction
 
-Code Samples:
+## <a name="packages"></a> Packages
+
+  - [Recursive Descent Parser](https://github.com/MatthewZito/IDL/tree/master/packages/parser)
+    * [Input Stream Processor](https://github.com/MatthewZito/IDL/blob/master/packages/parser/process-input-stream.js)
+    * [Lexer / Tokenizer](https://github.com/MatthewZito/IDL/blob/master/packages/parser/lexer.js)
+    * [Core Parser](https://github.com/MatthewZito/IDL/blob/master/packages/parser/parser.js)
+  - [Interpreter](https://github.com/MatthewZito/IDL/tree/master/packages/interpreter)
+    * [CPS Evaluator](https://github.com/MatthewZito/IDL/blob/master/packages/interpreter/context.js)
+
+
+## <a name="features"></a> Features
+
+  - Stack monitoring and custom garbage collection
+  - CPS / Continuations (specifically, IDL control flow is recursively bound by continuation-passing)
+  - Recursive Descent Parser
+  - Concurrent Lexer for rendering ASTs
+  - Compiles to JavaScript (cross-maps IDL ASTs into JavaScript syntax) 300x speed 
+
+### Code Samples
 
 Named variables:
 ```
@@ -24,15 +42,36 @@ print(fib(10)); # 55
 print(fib(20)); # 6765
 ```
 
+Unlimited Recursion:
+```
+sum = resolver(n, acc)
+if n == 0 do acc
+    else sum(n - 1, acc + n);
 
-## <a name="packages"></a> Packages
+# compute 1 + 2 + ... + 50000
+print(sum(50000, 0));  
+# 1250025000
+```
 
-  - [Parser](https://github.com/MatthewZito/IDL/tree/master/packages/parser)
-    * [Input Stream Processor](https://github.com/MatthewZito/IDL/blob/master/packages/parser/process-input-stream.js)
-    * [Lexer / Tokenizer](https://github.com/MatthewZito/IDL/blob/master/packages/parser/lexer.js)
-    * [Core Parser](https://github.com/MatthewZito/IDL/blob/master/packages/parser/parser.js)
-  - [Interpreter](https://github.com/MatthewZito/IDL/tree/master/packages/interpreter)
-    * [CPS Evaluator](https://github.com/MatthewZito/IDL/blob/master/packages/interpreter/context.js)
+Compiling to JavaScript
+
+IDL:
+```
+sum = resolver(n, acc)
+if n == 0 do acc
+    else sum(n - 1, acc + n);
+
+# comments
+# will
+# be
+# ignored
+print(sum(50000, 0))
+```
+JavaScript:
+```
+((sum=(function (n, acc){return ((n==0) !== false ? acc : sum((n-1), (acc+n)))})), print(sum(50000, 0)))
+```
+
 
 ## <a name="docs"></a> Documentation
 

@@ -1,5 +1,7 @@
 const { Context, evaluate, Execute } = require("./context.js");
 const { parse, RenderInputStream, RenderTokenStream } = require("../parser");
+const Transpiler = require("../compiler/transpiler.js");
+const CpsTransformer = require("../compiler/CPS-transformer.js");
 
 const ctx = new Context();
 
@@ -15,12 +17,7 @@ ctx.define("time", (fn) => {
 
 if (typeof process !== "undefined") {
     (() => {
-        const util = require("util");
-
-        ctx.define("println", (val) => util.puts(val));
-
-        ctx.define("print", (val) => util.print(val));
-
+       
         let code = "";
         
         process.stdin.setEncoding("utf8");
@@ -41,10 +38,23 @@ if (typeof process !== "undefined") {
 };
 
 // test
-const code = `let (x = 7, y = 9, z = x + y) print(x + y + z);`;
+const code = `add = resolver(a, b) a + b;`;
 
 const ABSTRACT_SYNTAX_TREE = parse(RenderTokenStream(RenderInputStream(code)));
 
 ctx.define("print", (callback, txt) => callback(txt));
 
-Execute(evaluate, [ ABSTRACT_SYNTAX_TREE, ctx, (result) => console.log("Result ---> ", result)]);
+ctx.define("sleep", (k, ms) => setTimeout(() => Execute(k, [ false ]), ms));
+
+// Execute(evaluate, [ ABSTRACT_SYNTAX_TREE, ctx, (result) => console.log("Result ---> ", result)]);
+
+const cps = CpsTransformer(ABSTRACT_SYNTAX_TREE, (x) => x);
+
+const output = Transpiler(cps);
+
+print = function(txt) {
+    console.log(txt);
+};
+
+console.log(output);
+

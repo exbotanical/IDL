@@ -10,5 +10,7 @@ module.exports = ERRORS = {
     EVAL: "Cannot evaluate expression:",
     NAN: "Expected integer in lieu of:",
     ZERO_DIVISION: "Cannot evaluate zero-division",
-    UNKNOWN_OP: "Unknown operator found at:"
+    UNKNOWN_OP: "Unknown operator found at:",
+    COMPILATION_ERR: "Cannot compile to JavaScript: ",
+    TRANSFORM_ERR: "Cannot extend continuation-passing: "
 };
