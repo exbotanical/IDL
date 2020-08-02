@@ -18,6 +18,10 @@
     * [Core Parser](https://github.com/MatthewZito/IDL/blob/master/packages/parser/parser.js)
   - [Interpreter](https://github.com/MatthewZito/IDL/tree/master/packages/interpreter)
     * [CPS Evaluator](https://github.com/MatthewZito/IDL/blob/master/packages/interpreter/context.js)
+    * [Constructs and Primitives](https://github.com/MatthewZito/IDL/blob/master/packages/interpreter/constructs.js)
+  - [Compiler Set](https://github.com/MatthewZito/IDL/tree/master/packages/compiler)
+    * [CPS Transformer](https://github.com/MatthewZito/IDL/blob/master/packages/compiler/CPS-transformer.js)
+    * [JavaScript Transpiler](https://github.com/MatthewZito/IDL/blob/master/packages/compiler/transpiler.js)
 
 
 ## <a name="features"></a> Features
