@@ -1,12 +1,14 @@
-const { TYPES, KEYWORDS, ERRORS } = require("../constants");
+const { TYPES, KEYWORDS, ERRORS } = require("../../constants");
 
-let GENSYM = 0;
+const computePurity = require("./compute-purity.js");
+
+let SYNTHETIC_STACK_CTRL = 0;
 const computeNewSymbol = (name) => {
     if (!name) {
         name = "";
     }
     name = KEYWORDS.SYMBOL + name;
-    return name + (++GENSYM);
+    return `${name}${++SYNTHETIC_STACK_CTRL}`;
 };
 
 const computeContinuation = (k) => {
@@ -31,12 +33,12 @@ function CpsTransformer(expr, k) {
                 return cpsResolver(expr, k);
             case KEYWORDS.CONDITIONAL:  
                 return cpsConditional(expr, k);
-            case TYPES.SEQUENCE: 
+            case TYPES.SEQUENCE:
                 return cpsSequence(expr, k);
             case TYPES.CALL: 
                 return cpsCall(expr, k);
             default:
-                throw new Error(ERRORS.TRANSFORM_ERR + JSON.stringify(expr));
+                throw new Error(ERRORS.TRANSFORM_ERR + expr.type);
         }
     }
 
@@ -100,14 +102,31 @@ function CpsTransformer(expr, k) {
     };
 
     function cpsConditional(expr, k) {
-        return cps(expr.condition, (condition) => 
-            ({
-                type: KEYWORDS.CONDITIONAL,
-                condition,
-                do: cps(expr.do, k),
-                else: cps(expr.else || { type: TYPES.BOOLEAN, value: false }, k),
-            })
-        );
+        return cps(expr.condition, (condition) => {
+            const cvar = computeNewSymbol("I");
+            const cast = computeContinuation(k);
+            k = function(resolvedCondition) {
+                return {
+                    type: TYPES.CALL,
+                    func: { type: TYPES.VARIABLE, value: cvar },
+                    args: [ resolvedCondition ]
+                };
+            };
+            return {
+                type: TYPES.CALL,
+                func: {
+                    type: KEYWORDS.FUNCTION,
+                    vars: [ cvar ],
+                    body: {
+                        type: KEYWORDS.CONDITIONAL,
+                        condition,
+                        do: cps(expr.do, k),
+                        else: cps(expr.else || { type: TYPES.BOOLEAN, value: false }, k)
+                    }
+                },
+                args: [ cast ]
+            };
+        });
     };
     
     function cpsSequence(expr, k) {
@@ -120,19 +139,25 @@ function CpsTransformer(expr, k) {
             if (body.length == 1) {
                 return cps(body[0], k);
             }
+            if (!computePurity(body[0])) {
+                return loop(body.slice(1));
+            }
             // expressions > 1, compile first and recurse remainder thereof
-            return cps(body[0], (first) => 
-                ({
-                    type: TYPES.SEQUENCE,
-                    seq: [ first, loop(body.slice(1)) ]
-                })
-            );
+            return cps(body[0], (first) => {
+                if (computePurity(first)) {
+                    return {
+                        type: TYPES.SEQUENCE,
+                        seq: [ first, loop(body.slice(1)) ]
+                    };
+                }
+                return loop(body.slice(1));
+            });
         })(expr.seq);
     };
 
     function cpsCall(expr, k) {
-        return cps(expr.func, (func) => {
-            return (function loop(args, i) {
+        return cps(expr.func, (func) => 
+            (function loop(args, i) {
                 if (i == expr.args.length) {
                     return {
                         type : TYPES.CALL,
@@ -144,12 +169,9 @@ function CpsTransformer(expr, k) {
                     args[i + 1] = value;
                     return loop(args, i + 1);
                 });
-            })([ computeContinuation(k) ], 0);
-        });
+            })([ computeContinuation(k) ], 0)
+        );
     };
-
-
-
 };
 
 module.exports = CpsTransformer;

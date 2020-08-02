@@ -1,4 +1,4 @@
-const { ERRORS, KEYWORDS, PRECEDENCE, TYPES, TOKENS } = require("../constants");
+const { ERRORS, KEYWORDS, TYPES } = require("../../constants");
 
 
 let STACK_LEN;

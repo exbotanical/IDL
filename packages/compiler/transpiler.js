@@ -1,4 +1,4 @@
-const { ERRORS, KEYWORDS, PRECEDENCE, TYPES, TOKENS } = require("../constants");
+const { ERRORS, KEYWORDS, TYPES } = require("../../constants");
 
 function Transpiler(expr) {
     return js(expr);
@@ -41,7 +41,7 @@ function Transpiler(expr) {
         };
 
         function procBinary(expr) {
-            return TOKENS.EXPR_OPEN + js(expr.left) + expr.operator + js(expr.right) + TOKENS.EXPR_CLOSE;
+            return "(" + js(expr.left) + expr.operator + js(expr.right) + ")";
         };
 
         function procAssignment(expr) {
@@ -49,12 +49,11 @@ function Transpiler(expr) {
         };
 
         function procResolver(expr) {
-            let code = `${TOKENS.EXPR_OPEN}function `;
-            if (expr.name) {
-                code += constructVariable(expr.name);
-            }
-            code += TOKENS.EXPR_OPEN + expr.vars.map(constructVariable).join(", ") + TOKENS.EXPR_CLOSE + TOKENS.BLOCK_OPEN;
-            code += "return " + js(expr.body) + TOKENS.BLOCK_CLOSE + TOKENS.EXPR_CLOSE;
+            let code = "(function ";
+            const CC = expr.name || KEYWORDS.SYMBOL + "CC";
+            code += constructVariable(CC);
+            code += "(" + expr.vars.map(constructVariable).join(", ") + ")";
+            code += `{ STACK_GUARD(arguments, ${CC}); ${js(expr.body)} })`;
             return code;
         };
 
@@ -75,23 +74,23 @@ function Transpiler(expr) {
                 },
                 args: [ expr.vars[0].def || { type: TYPES.BOOLEAN, value: false }]
             };
-            return TOKENS.EXPR_OPEN + js(iifeNode) + TOKENS.EXPR_CLOSE;
+            return `(${js(iifeNode)})`;
         };
 
         function procConditional(expr) {
-            return TOKENS.EXPR_OPEN
+            return "("
                 + js(expr.condition) + " !== false"
                 + " ? " + js(expr.do)
                 + " : " + js(expr.else || { type: TYPES.BOOLEAN, value: false })
-                +  TOKENS.EXPR_CLOSE;
+                +  ")";
         };
 
         function procSequence(expr) {
-            return TOKENS.EXPR_OPEN + expr.seq.map(js).join(", ") + TOKENS.EXPR_CLOSE;
+            return `(${expr.seq.map(js).join(", ")})`;
         };
 
         function procCall(expr) {
-            return js(expr.func) + TOKENS.EXPR_OPEN + expr.args.map(js).join(", ") + TOKENS.EXPR_CLOSE; 
+            return js(expr.func) + `(${expr.args.map(js).join(", ")})`; 
         };
 };
 

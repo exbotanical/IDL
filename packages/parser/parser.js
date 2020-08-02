@@ -1,4 +1,4 @@
-const { ERRORS, KEYWORDS, PRECEDENCE, TYPES, TOKENS } = require("../constants");
+const { ERRORS, KEYWORDS, PRECEDENCE, TYPES, TOKENS } = require("../../constants");
 
 // recursive descent parser
 const parse = input => {
@@ -23,7 +23,7 @@ const parse = input => {
 
     const unexpected = () => input.term(ERRORS.TOKEN_ERR, JSON.stringify(input.peek()));
 
-    const isNextBinary = (left, precedence) => {
+    function isNextBinary(left, precedence) {
         const token = isOperator();
         if (token) {
             const metric = PRECEDENCE[token.value];
@@ -40,7 +40,7 @@ const parse = input => {
         return left;
     };
 
-    const delimited = (begin, end, imperative, parser) => {
+    function delimited(begin, end, imperative, parser) {
         const collatedArgs = [];
         let initialChar = true;
         passPunctuator(begin);
@@ -64,13 +64,15 @@ const parse = input => {
     };
 
     // func call, parse expression therein
-    const parseCall = func => ({
+    function parseCall(func) {
+        return {
             type: TYPES.CALL,
             func,
             args: delimited(TOKENS.EXPR_OPEN, TOKENS.EXPR_CLOSE, TOKENS.DELIMITER, parseExpression),
-        });
+        };
+    };
 
-    const parseVariable = () => {
+    function parseVariable() {
         const token = input.next();
         if (token.type !== TYPES.VARIABLE) {
             input.term(ERRORS.NO_VARNAME);
@@ -98,20 +100,24 @@ const parse = input => {
         return conditionalExpression;
     };
 
-    const parseResolver = () => ({
+    function parseResolver() {
+        return {
             type: KEYWORDS.FUNCTION,
             name: input.peek().type === TYPES.VARIABLE ? input.next().value : null,
             vars: delimited(TOKENS.EXPR_OPEN, TOKENS.EXPR_CLOSE, TOKENS.DELIMITER, parseVariable),
             body: parseExpression()
-        });
+        };
+    };
     
-    const parseBoolean = () => ({
+    function parseBoolean() {
+        return {
             type: TYPES.BOOLEAN,
             value: input.next().value === KEYWORDS.TRUE
-        });
+        };
+    };
     
     // receives a function expected to parse current expression
-    const isNextCall = inbound => {
+    function isNextCall(inbound) {
         // parse expression and thereafter, check for expression / call open
         inbound = inbound();
         return isPunctuator(TOKENS.EXPR_OPEN) ? parseCall(inbound) : inbound;
@@ -155,7 +161,7 @@ const parse = input => {
         });
     };
 
-    const parseRoot = () => {
+    function parseRoot() {
         const seq = [];
         while (!input.eof()) {
             seq.push(parseExpression());
@@ -166,7 +172,7 @@ const parse = input => {
         return { type: TYPES.SEQUENCE, seq };
     };
     
-    const parseSequence = () => {
+    function parseSequence() {
         const seq = delimited(TOKENS.BLOCK_OPEN, TOKENS.BLOCK_CLOSE, TOKENS.END_EXPR, parseExpression);
         // sequence is empty, return false node
         if (seq.length === 0) {

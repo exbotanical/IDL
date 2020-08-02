@@ -28,7 +28,14 @@
   - Concurrent Lexer for rendering ASTs
   - Compiles to JavaScript (cross-maps IDL ASTs into JavaScript syntax) 300x speed 
 
-### Code Samples
+
+## <a name="docs"></a> Documentation
+
+Docs coming soon...
+
+## <a name="demo"></a> Abstractions 
+
+### IDL Code Samples
 
 Named variables:
 ```
@@ -53,7 +60,7 @@ print(sum(50000, 0));
 # 1250025000
 ```
 
-Compiling to JavaScript
+### Compiling to JavaScript
 
 IDL:
 ```
@@ -72,12 +79,25 @@ JavaScript:
 ((sum=(function (n, acc){return ((n==0) !== false ? acc : sum((n-1), (acc+n)))})), print(sum(50000, 0)))
 ```
 
+IDL:
+```
+a = foo();
+b = bar();
+c = baz();
+```
 
-## <a name="docs"></a> Documentation
+JavaScript:
+```
+foo(function (ε_R1) {
+    return a=ε_R1, bar(function(ε_R2) { 
+        return b=ε_R2, baz(function(ε_R3) {
+            return c=ε_R3
+        });
+    });
+});
+```
 
-Docs coming soon...
-
-## <a name="demo"></a> Abstractions 
+### AST Format
 
 AST outputs for a Fibonacci Resolver:
 ```
@@ -260,12 +280,6 @@ AST outputs for a Fibonacci Resolver:
 { token: { type: 'PUNCTUATOR', value: ';' } } { type: 'PUNCTUATOR' } { inbound: '(' }
 { token: { type: 'PUNCTUATOR', value: ';' } } { type: 'PUNCTUATOR' } { inbound: ';' }
 ```
-
-
-
-
-
-
 
 ## Accreditations
 The design of this interpreter is heavily based on an implementation by Mihai Bazon. The parser is likewise heavily based on patterns and designs by Marijn Haverbeke. 

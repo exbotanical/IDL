@@ -1,4 +1,4 @@
-const { ERRORS, TOKENS, TYPES, KEYWORDS } = require("../constants");
+const { ERRORS, TOKENS, TYPES, KEYWORDS } = require("../../constants");
 
 const RenderTokenStream = input => {
     let _current = null;
