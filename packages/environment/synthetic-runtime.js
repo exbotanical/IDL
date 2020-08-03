@@ -1,29 +1,66 @@
 const { parse, RenderInputStream, RenderTokenStream } = require("../parser");
 const { Transpiler, CpsTransformer } = require("../compiler");
+const { Execute, STACK_GUARD } = require("../interpreter/context.js");
+const CpsOptimizer = require("../optimizer/CPS-optimizer.js");
 
-// test
-const code = `fib = resolver(n) if n < 2 do n else fib(n - 1) + fib(n - 2);
-time( resolver() print(fib(27)) );`;
+if (typeof process != "undefined") (() => {
+    const sys = require("util");
 
-const ABSTRACT_SYNTAX_TREE = parse(RenderTokenStream(RenderInputStream(code)));
+    const print = (txt) => console.log(txt);
 
-const cps = CpsTransformer(ABSTRACT_SYNTAX_TREE, (x) => x);
+    function readStdin(callback) {
+        let text = "";
+        process.stdin.setEncoding("utf8");
+        process.stdin.on("readable", () => {
+            const chunk = process.stdin.read();
+            if (chunk) {
+                text += chunk;
+            }
+        });
+        process.stdin.on("end", () => callback(text));
+    };
 
-const output = Transpiler(cps);
+    readStdin((code) => {
+        const ast = parse(RenderTokenStream(RenderInputStream(code)));
+        const cps = CpsTransformer(ast, (x) => 
+            ({
+                type: "CALL",
+                func: { type: "VARIABLE", value: "ε_TOPLEVEL" },
+                args: [ x ]
+            })
+        );
 
-print = function(txt) {
-    console.log(txt);
-};
+        // console.log(sys.inspect(cps, { depth: null }));
 
-time = function(fn) {
-    try {
-        console.time("time");
-        return fn();
-    } 
-    finally {
-        console.timeEnd("time");
-    }
-};
+        const opt = CpsOptimizer(cps);
+        const jsc = Transpiler(opt);
 
-console.log(output);
-eval(output)
+        jsc = "var ε_TMP;\n\n" + jsc;
+
+        if (opt.env) {
+            const vars = Object.keys(opt.env.vars);
+            if (vars.length > 0) {
+                jsc = "var " + vars.map((name) =>
+                    Transpiler({
+                        type: "VARIABLE",
+                        value: name
+                    }).join(", ") + ";\n\n" + jsc);
+            }
+        }
+
+        jsc = '"use strict";\n\n' + jsc;
+
+        const func = new Function("ε_TOPLEVEL, STACK_GUARD, print, Execute", jsc);
+        console.time("Runtime");
+        Execute(func, [
+            function(result) {
+                console.timeEnd("Runtime");
+                console.log("M", result);
+            },
+            STACK_GUARD,
+            print,
+            Execute
+        ]);
+    });
+})();
+

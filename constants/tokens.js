@@ -16,5 +16,4 @@ module.exports = TOKENS = {
     BLOCK_CLOSE: "}",
     END_EXPR: ";",
     DELIMITER: ",",
-    ASSIGNMENT: "="
 };

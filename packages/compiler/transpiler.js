@@ -23,6 +23,8 @@ function Transpiler(expr) {
                 return procSequence(expr);
             case TYPES.CALL: 
                 return procCall(expr);
+            case TYPES.NEGATION:
+                return procNegation(expr);
             default:
                 throw new Error(`${ERRORS.COMPILATION_ERR} ${JSON.stringify(expr)}`);
         }
@@ -41,19 +43,48 @@ function Transpiler(expr) {
         };
 
         function procBinary(expr) {
-            return "(" + js(expr.left) + expr.operator + js(expr.right) + ")";
+            const left = js(expr.left);
+            const right = js(expr.right);
+            switch(expr.operator) {
+                case "&&":
+                    if (isBoolean(expr.left)) {
+                        break;
+                    }
+                    return "((" + left + " !== false) && " + right + ")";
+                case "||":
+                    if (isBoolean(expr.left)) {
+                        break;
+                    }
+                    return "((ε_TMP = " + left + ") !== false ? ε_TMP : " + right + ")";
+            }
+            return "(" + left + expr.operator + right + ")";
         };
 
         function procAssignment(expr) {
             return procBinary(expr);
         };
 
+        function procNegation(expr) {
+            if (isBoolean(expr.body)) {
+                return "!" + js(expr.body);
+            }
+            return "(" + js(expr.body) + " === false)";
+        };
+
         function procResolver(expr) {
-            let code = "(function ";
-            const CC = expr.name || KEYWORDS.SYMBOL + "CC";
-            code += constructVariable(CC);
-            code += "(" + expr.vars.map(constructVariable).join(", ") + ")";
-            code += `{ STACK_GUARD(arguments, ${CC}); ${js(expr.body)} })`;
+            let code = "(function ", CC;
+            if (!expr.unguarded) {
+                CC = expr.name || "ε_CC";
+                code += constructVariable(CC);
+            }
+            code += "(" + expr.vars.map(constructVariable).join(", ") + ") {";
+            if (expr.locs && expr.locs.length > 0) {
+                code += "var " + expr.locs.join(", ") + ";";
+            }
+            if (!expr.unguarded) {
+                code += "STACK_GUARD(arguments, " + CC + "); ";
+            }
+            code += js(expr.body) + " })";
             return code;
         };
 
@@ -78,12 +109,13 @@ function Transpiler(expr) {
         };
 
         function procConditional(expr) {
-            return "("
-                + js(expr.condition) + " !== false"
-                + " ? " + js(expr.do)
-                + " : " + js(expr.else || { type: TYPES.BOOLEAN, value: false })
-                +  ")";
+            const cond = js(expr.condition);
+            if (!isBoolean(expr.condition)) {
+                cond += " !== false";
+            }
+            return "(" + cond + " ? " + js(expr.do) + " : " + js(expr.else || { type: TYPES.BOOLEAN, value: false }) + ")";
         };
+ 
 
         function procSequence(expr) {
             return `(${expr.seq.map(js).join(", ")})`;
@@ -92,6 +124,24 @@ function Transpiler(expr) {
         function procCall(expr) {
             return js(expr.func) + `(${expr.args.map(js).join(", ")})`; 
         };
+
+        function isBoolean(expr) {
+            switch (expr.type) {
+                case TYPES.BOOLEAN: case TYPES.NEGATION:
+                    return true;
+              case TYPES.CONDITIONAL:
+                    return isBoolean(expr.do) || (expr.else && isBoolean(expr.else));
+              case TYPES.BINARY:
+                if (",<,<=,==,!=,>=,>,".indexOf("," + expr.operator + ",") >= 0) {
+                    return true;
+                }
+                if (expr.operator == "&&" || expr.operator == "||") {
+                    return isBoolean(expr.left) && isBoolean(expr.right);
+                }
+                break;
+            }
+            return false;
+        }
 };
 
 module.exports = Transpiler;

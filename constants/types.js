@@ -10,4 +10,5 @@ module.exports = TYPES = {
     BINARY: "BINARY",
     ASSIGNMENT: "ASSIGNMENT",
     SEQUENCE: "SEQUENCE",
+    NEGATION: "NEGATION"
 };

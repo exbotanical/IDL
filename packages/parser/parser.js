@@ -2,10 +2,9 @@ const { ERRORS, KEYWORDS, PRECEDENCE, TYPES, TOKENS } = require("../../constants
 
 // recursive descent parser
 const parse = input => {
-
     const procIs = (type, inbound) => {
         const token = input.peek();
-        console.log({token}, {type}, {inbound});
+        // console.log({token}, {type}, {inbound});
         return token && token.type === type && (!inbound || token.value === inbound) && token;
     };
     
@@ -22,6 +21,8 @@ const parse = input => {
     const passOperator = inbound => isOperator(inbound) ? input.next() : input.term(ERRORS.NO_OPERATOR, inbound);
 
     const unexpected = () => input.term(ERRORS.TOKEN_ERR, JSON.stringify(input.peek()));
+
+    return parseRoot();
 
     function isNextBinary(left, precedence) {
         const token = isOperator();
@@ -139,6 +140,13 @@ const parse = input => {
             if (isPunctuator(TOKENS.BLOCK_OPEN)) {
                 return parseSequence();
             }
+            if (isOperator("!")) {
+                input.next();
+                return {
+                    type: TYPES.NEGATION,
+                    body: parseExpression()
+                };
+            }
             if (isKeyword(KEYWORDS.DECLARATION)) {
                 return parseLet();
             }
@@ -148,7 +156,7 @@ const parse = input => {
             if (isKeyword(KEYWORDS.TRUE) || isKeyword(KEYWORDS.FALSE)) {
                 return parseBoolean();
             }
-            if (isKeyword(KEYWORDS.FUNCTION)) {
+            if (isKeyword(KEYWORDS.FUNCTION) || isKeyword("ε")) {
                 input.next();
                 return parseResolver();
             }
@@ -181,12 +189,13 @@ const parse = input => {
         if (seq.length === 1) { 
             return seq[0];
         }
-        return { type: TYPES.CALL, seq };
+        return { type: TYPES.SEQUENCE, seq };
     };
 
-    const parseExpression = () => isNextCall(() => isNextBinary(parseAtom(), 0));
-
-
+    function parseExpression() {
+        return isNextCall(() => isNextBinary(parseAtom(), 0));
+    };
+            
     function parseLet() {
         passKeyword(KEYWORDS.DECLARATION);
         if (input.peek().type == TYPES.VARIABLE) {
@@ -220,8 +229,6 @@ const parse = input => {
         }
         return { name, def };
     };
-
-    return parseRoot();
 
 };
 

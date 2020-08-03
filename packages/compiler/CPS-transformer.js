@@ -21,6 +21,7 @@ const computeContinuation = (k) => {
 
 function CpsTransformer(expr, k) {
     return cps(expr, k);
+    
     function cps(expr, k) {
         switch (expr.type) {
             case TYPES.INTEGER: case TYPES.STRING: case TYPES.BOOLEAN: case TYPES.VARIABLE:
@@ -37,13 +38,19 @@ function CpsTransformer(expr, k) {
                 return cpsSequence(expr, k);
             case TYPES.CALL: 
                 return cpsCall(expr, k);
+            case TYPES.NEGATION:
+                return cpsNegation(expr, k);
             default:
-                throw new Error(ERRORS.TRANSFORM_ERR + expr.type);
+                throw new Error(ERRORS.TRANSFORM_ERR + JSON.stringify(expr));
         }
     }
 
     function cpsAtomic(expr, k) { 
         return k(expr);
+    };
+
+    function cpsNegation(expr, k) {
+        return cps(expr.body, (body) => k({ type: TYPES.NEGATION, body }));
     };
 
     // here, we invoke the continuation only after having compiled the left and right rings 
@@ -106,6 +113,7 @@ function CpsTransformer(expr, k) {
             const cvar = computeNewSymbol("I");
             const cast = computeContinuation(k);
             k = function(resolvedCondition) {
+                // console.log("X", expr.else);
                 return {
                     type: TYPES.CALL,
                     func: { type: TYPES.VARIABLE, value: cvar },
@@ -121,7 +129,7 @@ function CpsTransformer(expr, k) {
                         type: KEYWORDS.CONDITIONAL,
                         condition,
                         do: cps(expr.do, k),
-                        else: cps(expr.else || { type: TYPES.BOOLEAN, value: false }, k)
+                        else: cps(expr.else || { type: TYPES.BOOLEAN, value: false }, k) /* BUGFIX REQUIRED */
                     }
                 },
                 args: [ cast ]
@@ -132,11 +140,11 @@ function CpsTransformer(expr, k) {
     function cpsSequence(expr, k) {
         return (function loop(body) {
             // call remainder of sequence w/FALSE node
-            if (body.length == 0) {
+            if (body.length === 0) {
                 return k({ type: TYPES.BOOLEAN, value: false });
             }
             // call remainder of sequence w/ expression's resolved value
-            if (body.length == 1) {
+            if (body.length === 1) {
                 return cps(body[0], k);
             }
             if (!computePurity(body[0])) {
@@ -155,12 +163,12 @@ function CpsTransformer(expr, k) {
         })(expr.seq);
     };
 
-    function cpsCall(expr, k) {
-        return cps(expr.func, (func) => 
+    function cpsCall(expr, k) { 
+        return cps(expr.func, (func) => {
             (function loop(args, i) {
                 if (i == expr.args.length) {
                     return {
-                        type : TYPES.CALL,
+                        type: TYPES.CALL,
                         func,
                         args
                     };
@@ -169,8 +177,8 @@ function CpsTransformer(expr, k) {
                     args[i + 1] = value;
                     return loop(args, i + 1);
                 });
-            })([ computeContinuation(k) ], 0)
-        );
+            })([ computeContinuation(k) ], 0);
+        });
     };
 };
 

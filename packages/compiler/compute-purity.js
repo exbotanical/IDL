@@ -10,7 +10,7 @@ module.exports = computePurity = (expr) => {
             return computePurity(expr.left) || computePurity(expr.right);
         case KEYWORDS.CONDITIONAL:
             return computePurity(expr.condition) || computePurity(expr.do) || expr.else && computePurity(expr.else);
-        case KEYWORDS.VARIABLE:
+        case KEYWORDS.DECLARATION:
             for (let i = 0; i < expr.vars.length; ++i) {
                 const v = expr.vars[i];
                 if (v.def && computePurity(v.def)) {

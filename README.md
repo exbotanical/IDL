@@ -41,12 +41,12 @@ Docs coming soon...
 
 ### IDL Code Samples
 
-Named variables:
+Named expressions:
 ```
 let (x = 7, y = 9, z = x + y) print(x + y + z); # 32
 ```
 
-Lambda expressions:
+Resolvers:
 ```
 fib = resolver(n) if n < 2 do n else fib(n - 1) + fib(n - 2); 
 print(fib(10)); # 55
@@ -64,24 +64,7 @@ print(sum(50000, 0));
 # 1250025000
 ```
 
-### Compiling to JavaScript
-
-IDL:
-```
-sum = resolver(n, acc)
-if n == 0 do acc
-    else sum(n - 1, acc + n);
-
-# comments
-# will
-# be
-# ignored
-print(sum(50000, 0))
-```
-JavaScript:
-```
-((sum=(function (n, acc){return ((n==0) !== false ? acc : sum((n-1), (acc+n)))})), print(sum(50000, 0)))
-```
+### Compiling to JavaScript (pre-optimized)
 
 IDL:
 ```
@@ -99,6 +82,50 @@ foo(function (ε_R1) {
         });
     });
 });
+```
+
+IDL:
+```
+(resolver(){
+    let (a = 2) {
+      let (a = 3) {
+        print(a);
+      };
+      print(a);
+    };
+  })();
+```
+
+JavaScript (pre-optimization):
+```
+(function ε_CC(ε_K1) { 
+    STACK_GUARD(arguments, ε_CC); 
+    (function ε_CC(ε_K2, a) { 
+        STACK_GUARD(arguments, ε_CC); 
+        (function ε_CC(ε_K3, a) { 
+            STACK_GUARD(arguments, ε_CC); 
+            print((function ε_CC(ε_R4) { 
+                STACK_GUARD(arguments, ε_CC); 
+                ε_K3(ε_R4) 
+            }), a) 
+        }) 
+        ((function ε_CC(ε_R5) { 
+            STACK_GUARD(arguments, ε_CC); 
+            print((function ε_CC(ε_R6) { 
+                STACK_GUARD(arguments, ε_CC); 
+                ε_K2(ε_R6) 
+            }), a) 
+        }), 3) 
+    })
+    ((function ε_CC(ε_R7) { 
+        STACK_GUARD(arguments, ε_CC); 
+        ε_K1(ε_R7) 
+    }), 2) 
+})
+((function ε_CC(ε_R8) {
+     STACK_GUARD(arguments, ε_CC); 
+     ε_R8 
+    }))
 ```
 
 ### AST Format

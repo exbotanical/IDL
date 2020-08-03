@@ -4,4 +4,5 @@ module.exports = {
     PRECEDENCE: require("./precedence.js"),
     TOKENS: require("./tokens.js"),
     TYPES: require("./types.js"),
+    OPERATORS: require("./operators.js")
 };
