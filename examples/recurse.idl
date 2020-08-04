@@ -1,0 +1,7 @@
+sum = resolver(n, acc)
+if n == 0 do acc
+    else sum(n - 1, acc + n);
+
+# compute 1 + 2 + ... + 50000
+print(sum(50000, 0));  
+# 1250025000

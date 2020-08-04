@@ -22,7 +22,8 @@
   - [Compiler Set](https://github.com/MatthewZito/IDL/tree/master/packages/compiler)
     * [CPS Transformer](https://github.com/MatthewZito/IDL/blob/master/packages/compiler/CPS-transformer.js)
     * [JavaScript Transpiler](https://github.com/MatthewZito/IDL/blob/master/packages/compiler/transpiler.js)
-
+  - [CPS Optimizer](https://github.com/MatthewZito/IDL/blob/master/packages/optimizer/CPS-optimizer.js)
+  - [Node.js Runtime](https://github.com/MatthewZito/IDL/blob/master/packages/environment/synthetic-runtime.js)
 
 ## <a name="features"></a> Features
 
@@ -32,7 +33,6 @@
   - Concurrent Lexer for rendering ASTs
   - Compiles to JavaScript (cross-maps IDL ASTs into JavaScript syntax) 300x speed 
 
-
 ## <a name="docs"></a> Documentation
 
 Docs coming soon...
@@ -40,49 +40,9 @@ Docs coming soon...
 ## <a name="demo"></a> Abstractions 
 
 ### IDL Code Samples
+IDL code samples have been relocated to [this directory](https://github.com/MatthewZito/IDL/blob/master/examples)
 
-Named expressions:
-```
-let (x = 7, y = 9, z = x + y) print(x + y + z); # 32
-```
-
-Resolvers:
-```
-fib = resolver(n) if n < 2 do n else fib(n - 1) + fib(n - 2); 
-print(fib(10)); # 55
-print(fib(20)); # 6765
-```
-
-Unlimited Recursion:
-```
-sum = resolver(n, acc)
-if n == 0 do acc
-    else sum(n - 1, acc + n);
-
-# compute 1 + 2 + ... + 50000
-print(sum(50000, 0));  
-# 1250025000
-```
-
-### Compiling to JavaScript (pre-optimized)
-
-IDL:
-```
-a = foo();
-b = bar();
-c = baz();
-```
-
-JavaScript:
-```
-foo(function (ε_R1) {
-    return a=ε_R1, bar(function(ε_R2) { 
-        return b=ε_R2, baz(function(ε_R3) {
-            return c=ε_R3
-        });
-    });
-});
-```
+### Compiling to JavaScript (and optimizing)
 
 IDL:
 ```
@@ -126,6 +86,20 @@ JavaScript (pre-optimization):
      STACK_GUARD(arguments, ε_CC); 
      ε_R8 
     }))
+```
+
+Post-optimization:
+```
+(function (ε_K1) { 
+    var a, ε_K3, ε_a$1;
+    ((a=2), ((ε_K3 = (function (ε_R5) { 
+        print(ε_K1, a) 
+    })), ((ε_a$1=3), 
+        print((function (ε_R4) { 
+            ε_K3(ε_R4) 
+        }), ε_a$1)))) })((function (ε_R8) { 
+            ε_TOPLEVEL(ε_R8) 
+        }));
 ```
 
 ### AST Format

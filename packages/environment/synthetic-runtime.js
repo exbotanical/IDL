@@ -37,7 +37,7 @@ if (typeof process != "undefined") (() => {
 
         const opt = CpsOptimizer(cps);
         let jsc = Transpiler(opt);
-
+        console.log(jsc)
         jsc = "var ε_TMP;\n\n" + jsc;
 
         if (opt.env) {
@@ -68,4 +68,6 @@ if (typeof process != "undefined") (() => {
         ]);
     });
 })();
+
+
 
