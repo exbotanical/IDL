@@ -6,7 +6,10 @@ const CpsOptimizer = require("../optimizer/CPS-optimizer.js");
 if (typeof process != "undefined") (() => {
     const sys = require("util");
 
-    const print = (txt) => console.log(txt);
+    const print = function(k) {
+        console.log([].slice.call(arguments, 1).join(" "));
+        k(false);
+    };
 
     function readStdin(callback) {
         let text = "";
@@ -30,10 +33,10 @@ if (typeof process != "undefined") (() => {
             })
         );
 
-        // console.log(sys.inspect(cps, { depth: null }));
+        // console.log(cps);
 
         const opt = CpsOptimizer(cps);
-        const jsc = Transpiler(opt);
+        let jsc = Transpiler(opt);
 
         jsc = "var ε_TMP;\n\n" + jsc;
 
@@ -44,18 +47,20 @@ if (typeof process != "undefined") (() => {
                     Transpiler({
                         type: "VARIABLE",
                         value: name
-                    }).join(", ") + ";\n\n" + jsc);
+                    })
+                ).join(", ") + ";\n\n" + jsc;
             }
         }
 
         jsc = '"use strict";\n\n' + jsc;
+        // console.log(sys.inspect(jsc, { depth: null }));
 
         const func = new Function("ε_TOPLEVEL, STACK_GUARD, print, Execute", jsc);
         console.time("Runtime");
         Execute(func, [
             function(result) {
                 console.timeEnd("Runtime");
-                console.log("M", result);
+                console.log("Final: ", result);
             },
             STACK_GUARD,
             print,

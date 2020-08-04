@@ -13,9 +13,10 @@ const computeNewSymbol = (name) => {
 
 const computeContinuation = (k) => {
     const continuation = computeNewSymbol("R");
-    return { type : KEYWORDS.FUNCTION,
-             vars : [ continuation ],
-             body : k({ type  : TYPES.VARIABLE, value : continuation }) 
+    return { 
+            type: KEYWORDS.FUNCTION,
+            vars: [ continuation ],
+            body: k({ type: TYPES.VARIABLE, value: continuation }) 
     };
 };
 
@@ -113,7 +114,6 @@ function CpsTransformer(expr, k) {
             const cvar = computeNewSymbol("I");
             const cast = computeContinuation(k);
             k = function(resolvedCondition) {
-                // console.log("X", expr.else);
                 return {
                     type: TYPES.CALL,
                     func: { type: TYPES.VARIABLE, value: cvar },
@@ -165,7 +165,7 @@ function CpsTransformer(expr, k) {
 
     function cpsCall(expr, k) { 
         return cps(expr.func, (func) => {
-            (function loop(args, i) {
+            return (function loop(args, i) {
                 if (i == expr.args.length) {
                     return {
                         type: TYPES.CALL,

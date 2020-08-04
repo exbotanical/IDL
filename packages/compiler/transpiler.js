@@ -129,16 +129,16 @@ function Transpiler(expr) {
             switch (expr.type) {
                 case TYPES.BOOLEAN: case TYPES.NEGATION:
                     return true;
-              case TYPES.CONDITIONAL:
+                case TYPES.CONDITIONAL:
                     return isBoolean(expr.do) || (expr.else && isBoolean(expr.else));
-              case TYPES.BINARY:
-                if (",<,<=,==,!=,>=,>,".indexOf("," + expr.operator + ",") >= 0) {
-                    return true;
-                }
-                if (expr.operator == "&&" || expr.operator == "||") {
-                    return isBoolean(expr.left) && isBoolean(expr.right);
-                }
-                break;
+                case TYPES.BINARY:
+                    if (",<,<=,==,!=,>=,>,".indexOf("," + expr.operator + ",") >= 0) {
+                        return true;
+                    }
+                    if (expr.operator == "&&" || expr.operator == "||") {
+                        return isBoolean(expr.left) && isBoolean(expr.right);
+                    }
+                    break;
             }
             return false;
         }

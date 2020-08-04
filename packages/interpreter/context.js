@@ -29,7 +29,7 @@ function Execute(fn, args) {
         catch(err) {
             if (err instanceof Continuation) {
                 fn = err.func;
-                args = err.args;
+                args = err.args; 
             }
             else {
                 ROOT_EXECUTION_CONTEXT_ACTIVE = false;
@@ -37,6 +37,7 @@ function Execute(fn, args) {
             }
         }
     }
+    ROOT_EXECUTION_CONTEXT_ACTIVE = false;
 };
 
 function Context(parent) {

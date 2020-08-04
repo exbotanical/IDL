@@ -372,12 +372,14 @@ function constructClosure(expr) {
                 break;
 
             case TYPES.SEQUENCE:
-                expr.seq.forEach((expr) => scope(expr, env));
+                expr.seq.forEach((expr) => {
+                    scope(expr, env);
+                })
                 break;
 
             case TYPES.CALL:
                 scope(expr.func, env);
-                expr.args.forEach((expr) =>  scope(expr, env));
+                expr.args.forEach((expr) => scope(expr, env));
                 break;
 
             case KEYWORDS.FUNCTION:
