@@ -27,7 +27,7 @@
 
 ## <a name="features"></a> Features
 
-  - Stack monitoring and custom garbage collection
+  - Stack monitoring and garbage collection
   - CPS / Continuations (specifically, IDL control flow is recursively bound by continuation-passing)
   - Recursive Descent Parser
   - Concurrent Lexer for rendering ASTs
