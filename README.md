@@ -31,7 +31,7 @@
   - CPS / Continuations (specifically, IDL control flow is recursively bound by continuation-passing)
   - Recursive Descent Parser
   - Concurrent Lexer for rendering ASTs
-  - Compiles to JavaScript (cross-maps IDL ASTs into JavaScript syntax) 300x speed 
+  - Compiles to JavaScript (cross-maps IDL ASTs into JavaScript syntax)
 
 ## <a name="docs"></a> Documentation
 
